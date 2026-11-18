@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VT选品面板</title>
+<style>
+:root{--bg:#f6f4ef;--card:#fff;--ink:#22201c;--mut:#6f6a5f;--line:#e5e0d5;--acc:#8a5a2b;--warn:#b3261e;--ok:#2e7d32}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;padding:16px}
+header{max-width:1200px;margin:0 auto 14px}
+h1{font-size:22px;margin-bottom:6px}
+.sub{color:var(--mut);font-size:13px;line-height:1.6}
+.tiles{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 14px;min-width:110px}
+.tile b{font-size:20px;display:block}
+.tile span{font-size:12px;color:var(--mut)}
+.controls{max-width:1200px;margin:0 auto 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls input{flex:1;min-width:180px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;font-size:14px;background:#fff}
+.chip{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:#fff;font-size:13px;cursor:pointer}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+main{max-width:1200px;margin:0 auto}
+h2{font-size:17px;margin:20px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.card img{width:100%;height:250px;object-fit:cover;background:#eee;display:block}
+.noimg{height:250px;background:#efe9dd;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--mut);font-size:14px;gap:6px}
+.body{padding:10px 12px;display:flex;flex-direction:column;gap:5px;flex:1}
+.badge{align-self:flex-start;font-size:11px;padding:2px 8px;border-radius:999px;background:#f0e7d8;color:var(--acc)}
+.brand{font-weight:700;font-size:15px}
+.style{font-size:13px}
+.meta{font-size:12px;color:var(--mut)}
+.prices{font-size:13px;line-height:1.7;border-top:1px dashed var(--line);padding-top:6px}
+.prices b{color:var(--acc)}
+.flag{font-size:12px;line-height:1.55;color:#444;border-top:1px dashed var(--line);padding-top:6px}
+.flag.warn{color:var(--warn)}
+.links{margin-top:auto;padding-top:8px;font-size:12px}
+.links a{color:var(--acc);margin-right:12px}
+footer{max-width:1200px;margin:24px auto 0;color:var(--mut);font-size:12px;line-height:1.7}
+.hidden{display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>VT 每日选品面板</h1>
+<div class="sub">三条线统一标准：Dôen/Alemais 核心 · 女装连衣裙为主 · XS–M · 95新无吊牌 · Vinted £50–150 · 跨线跨天不重复<br>
+线3 数据源：Vinted Sold 看板快照（2026-11-04–14，批次截止 2026-11-14，同步暂停中）</div>
+<div class="tiles" id="tiles"></div>
+</header>
+<div class="controls">
+<input id="q" type="search" placeholder="搜索品牌 / 款名 / 尺码…">
+<button class="chip on" data-f="all">全部</button>
+<button class="chip" data-f="L1P">线1 · Poshmark</button>
+<button class="chip" data-f="L1D">线1 · Depop</button>
+<button class="chip" data-f="L2">线2 · 闲鱼直挖</button>
+<button class="chip" data-f="L3">线3 · Vinted Sold</button>
+</div>
+<main id="main"></main>
+<footer>汇率参考约 ¥7.2 = £1。⚠️ 标注为替代款 / 尺码 / 真伪等需购前复核项，未标注为同款或通过。线2 闲鱼 10 款主图待补（闲鱼图廊在浏览器中读不到图片直链）。</footer>
+<script>
+const DATA=[
+{date:"2026-11-18",items:[
+{id:"P1",line:"L1P",ln:"线1 · Poshmark",brand:"Dôen",style:"Ischia Dress Floral Botanical",cat:"Midi",size:"海外 S / 货源 XS",cond:"穿过一次",src:"$230",srcUrl:"https://poshmark.com/listing/Ischia-Floral-Botanical-Midi-Dress-S-6af9d5c783b26cf1d0c93524",xy:"¥850",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1072161957729",sug:"£140",img:"https://di2ponv0v5otw.cloudfront.net/posts/2026/11/15/6af9d5c783b26cf1d0c93524/l_6af9d5dc31f0f6841ce60710.jpg",flag:"⚠️ Kdocs 重复风险：Ischia 历史上架两次（尺码未记录）；货源 XS 与海外 S 不一致",warn:1},
+{id:"P2",line:"L1P",ln:"线1 · Poshmark",brand:"Reformation",style:"Jensen Dress",cat:"Midi 裹身",size:"海外 S / 货源 XS",cond:"穿过一两次",src:"$150",srcUrl:"https://poshmark.com/listing/Reformation-Jensen-Dress-sz-S-60099435ffba94c496d745a2",xy:"¥538",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1067281816223",sug:"£115",img:"https://di2ponv0v5otw.cloudfront.net/posts/2021/01/21/60099435ffba94c496d745a2/l_60fdc183c693bda2a9f22f76.jpg",flag:"替代款：红色波点裹身裙，款名/真丝未确认",warn:0},
+{id:"P3",line:"L1P",ln:"线1 · Poshmark",brand:"GANNI",style:"Long Sleeve Velvet Mini Dress 黑天鹅绒",cat:"Mini",size:"M",cond:"NWT 全新带牌",src:"$125",srcUrl:"https://poshmark.com/listing/Ganni-Long-Sleeve-Mini-Dress-Velvet-UNeck-Scoop-Neck-Ruched-Black-Size-38-M-6af5e5ad3559d5728130178e",xy:"¥399",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1032969718150",sug:"£110",img:"https://di2ponv0v5otw.cloudfront.net/posts/2026/11/12/6af5e5ad3559d5728130178e/l_6af5e5b017a3c43334976285.jpeg",flag:"替代款：领型差异（货源 V 领 vs 海外 scoop/U 领）",warn:0},
+{id:"P4",line:"L1P",ln:"线1 · Poshmark",brand:"Reformation",style:"Franceska Velvet Mini Dress Chianti",cat:"Mini",size:"海外 US2 / 货源 0码",cond:"Like New",src:"$228",srcUrl:"https://poshmark.com/listing/Reformation-Franceska-Velvet-Mini-Dress-Chianti-Burgundy-Red-Scoop-Neck-Size-2-6afbae2f7049a1465d5c7001",xy:"¥432",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1090966207213",sug:"£110",img:"https://di2ponv0v5otw.cloudfront.net/posts/2026/11/16/6afbae2f7049a1465d5c7001/l_6afbae5c56502b59b664d4f9.jpg",flag:"⚠️ 照片/小票不符：小票写 Franceska Linen，照片为浅色碎花无袖迷你，非酒红天鹅绒",warn:1},
+{id:"D1",line:"L1D",ln:"线1 · Depop",brand:"Dôen",style:"Julia Dress",cat:"Midi",size:"S",cond:"NWT 全新带牌",src:"$180",srcUrl:"https://www.depop.com/products/kianlbrit-doen-julia-dress-size-small-ed44/",xy:"¥860",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1088950701203",sug:"£140",img:"https://media-photos.depop.com/r1/1981445/5248540810_34722349b95c43dcba4833e609f2ef40/P0.jpg",flag:"同款（基本全新，穿过一次已干洗）",warn:0},
+{id:"D2",line:"L1D",ln:"线1 · Depop",brand:"Zimmermann",style:"Matchmaker Polo Mini Dress",cat:"Mini 针织",size:"1 ≈ M",cond:"未标注",src:"$150",srcUrl:"https://www.depop.com/products/sisley_sloset-matchmaker-polo-mini-dress-size-69e4/",xy:"¥680",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1063093543227",sug:"£130",img:"https://media-photos.depop.com/b1/21974622/5237408875_ced941a2a1304080b2d7664d560f39ea/P0.jpg",flag:"⚠️ 同款，但卖家注：吊牌已拆、针织接缝不牢、扎、需内衬",warn:1},
+{id:"D3",line:"L1D",ln:"线1 · Depop",brand:"Reformation",style:"Dale Dress 蓝黑格纹",cat:"连衣裙",size:"M",cond:"未标注（货源仅试穿）",src:"$103.60",srcUrl:"https://www.depop.com/products/toaj222-reformation-dale-dress-blue-black-ab21/",xy:"¥520",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1094572494887",sug:"£105",img:"https://media-photos.depop.com/r1/39836143/5225847995_04acd16bf597438fb6a198212750427c/P0.jpg",flag:"同款",warn:0},
+{id:"D4",line:"L1D",ln:"线1 · Depop",brand:"GANNI",style:"Black Dress 黑色泡泡袖",cat:"连衣裙",size:"M",cond:"未标注（货源几乎全新）",src:"$51",srcUrl:"https://www.depop.com/products/phiihiwearswhat-ganni-dress-42ea/",xy:"¥59.20",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1079586109982",sug:"£65–75",img:"https://media-photos.depop.com/b1/13312474/5241479616_0cbdec50e0aa41cfa6bea16ed09734f8/P0.jpg",flag:"⚠️ 替代款且真伪存疑：卖家称 2025 年 5 月淘宝 ¥185 购入，远低于正品价",warn:1},
+{id:"D5",line:"L1D",ln:"线1 · Depop",brand:"Alemais",style:"Seeker Linen Dress 彩色抽象印花",cat:"Maxi",size:"S",cond:"未标注",src:"$60",srcUrl:"https://www.depop.com/products/mrosencloset-multicolored-seeker-linen-dress-maxi-233a/",xy:"¥359",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1062632510109",sug:"£85",img:"https://media-photos.depop.com/b1/332087051/4905901321_86d51784b4bf4bf4bef431291d1f933f/P0.jpg",flag:"⚠️ 替代款：Seeker 款名/印花未确认；货源品牌栏写 The suan；Maxi 仅作替补",warn:1},
+{id:"V1",line:"L3",ln:"线3 · Vinted Sold",brand:"Realisation Par",style:"Super Réal Claudia Schiffer 真丝雏菊碎花长袖裙",cat:"Mini",size:"成交 S / 货源 XS",cond:"货源几乎全新",src:"成交 £50 · 2026-11-04",srcUrl:"https://www.vinted.co.uk/items/10645527079-realisation-par-silk-dress",xy:"¥669",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1100345657167",sug:"£120",img:"https://images1.vinted.net/t/02_00628_uftB4MiwiCJZ7oiAJ5SGYgF8/f800/6c151227.webp?s=c95dd431194a86b638593fe570093239b7eaa0c8",flag:"同款（可折叠真丝约 250–350g）；货源 XS 与成交 S 不一致",warn:0},
+{id:"V2",line:"L3",ln:"线3 · Vinted Sold",brand:"Sézane",style:"Harleen Dress 深玫瑰木针织",cat:"针织连衣裙",size:"S（有歧义）",cond:"货源全新仅试穿",src:"成交 £58 · 2026-11-03",srcUrl:"https://www.vinted.co.uk/items/10638440191-harleen-sezane-dress-in-dark-rosewood-knit",xy:"¥260",xyKind:"替代款",xyUrl:"https://www.goofish.com/item?id=1057406272240",sug:"£85",img:"https://images1.vinted.net/t/06_00f68_ujhNzZKRAkv84USW6HntUs3y/f800/a775e0ab.webp?s=b6f5b566cfc9b4f5243268659bfbc35ddfaba15b",flag:"⚠️ 替代款：Harleen 款名未写；尺码歧义（标题 S / 详情 M）；针织约 400–550g",warn:1},
+{id:"V3",line:"L3",ln:"线3 · Vinted Sold",brand:"Sézane",style:"Gaspard Cardigan 灰马海毛",cat:"针织开衫",size:"S",cond:"货源穿一洗一",src:"成交 £55 · 2026-11-06",srcUrl:"https://www.vinted.co.uk/items/10669846334-sezane-gaspard-cardigan-s",xy:"¥350",xyKind:"同款",xyUrl:"https://www.goofish.com/item?id=1049880523674",sug:"£75",img:"https://images1.vinted.net/t/06_01bab_Dkz69wMCK5zQmTED4SWPfkZF/f800/f26a4829.webp?s=e82b78fae8b9c7d489eb2fd9efc69c00c0f159f4",flag:"⚠️ 同款但小提示：卖家自述购入价 ¥410 偏低、未写马海毛；约 350–500g",warn:1},
+{id:"L1",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Realisation Par",style:"Green Silk Floral V-Neck Long Sleeve Mini Dress",cat:"Mini",size:"XS",cond:"几乎全新",src:"",srcUrl:"",xy:"¥98.90",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1095468626767",sug:"£70",img:"",flag:"⚠️ 真伪提示：¥98.90 远低于 RP 正价，建议走验货宝（卖家为真丝经销商）",warn:1},
+{id:"L2",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Sandro",style:"Rondo White Cotton Crochet Babydoll Mini Dress",cat:"Mini",size:"S（1码）",cond:"几乎全新",src:"",srcUrl:"",xy:"¥100",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1098524621339",sug:"£75",img:"",flag:"通过（个人闲置卖家）",warn:0},
+{id:"L3",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Alemais",style:"Sun Moon Print Linen Slip Maxi Dress",cat:"Maxi",size:"AU6 / S",cond:"几乎全新（穿过一次）",src:"",srcUrl:"",xy:"¥450",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=945408940495",sug:"£115",img:"",flag:"⚠️ 详情页品牌栏写 The suan 非 Alemais，购前核实；卖家评分 92% 偏低",warn:1},
+{id:"L4",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Alemais",style:"White Embroidered Mini Dress with Belt",cat:"Mini",size:"UK 10",cond:"全新（基本未穿）",src:"",srcUrl:"",xy:"¥500",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1097008842294",sug:"£115",img:"",flag:"⚠️ 尺码仅标题写 UK10，详情页无尺码/成色栏",warn:1},
+{id:"L5",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Zimmermann",style:"Pattie Yellow Floral Lantern Sleeve Mini Dress",cat:"Mini",size:"S",cond:"几乎全新",src:"",srcUrl:"",xy:"¥709",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1083041393217",sug:"£130",img:"",flag:"⚠️ 卖家极新（注册 68 天、仅 2 售）",warn:1},
+{id:"L6",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Realisation Par",style:"The Eliza Green Polka Dot Silk Slip Dress",cat:"Slip 裙",size:"S",cond:"全新仅试穿无吊牌",src:"",srcUrl:"",xy:"¥679",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1069787965316",sug:"£125",img:"",flag:"通过",warn:0},
+{id:"L7",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Toteme",style:"Manta White Cotton Dress",cat:"连衣裙",size:"XS",cond:"几乎全新",src:"",srcUrl:"",xy:"¥188",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1099064705052",sug:"£90",img:"",flag:"通过",warn:0},
+{id:"L8",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Acne Studios",style:"Satin Bow Back Midi Dress",cat:"Midi",size:"34 / S",cond:"几乎全新（穿不超过三次）",src:"",srcUrl:"",xy:"¥500",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1075542822141",sug:"£95",img:"",flag:"⚠️ 颜色正文未写、照片未加载核实",warn:1},
+{id:"L9",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Toteme",style:"Black Cotton Sleeveless Midi Dress",cat:"Midi",size:"M",cond:"几乎全新",src:"",srcUrl:"",xy:"¥260",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1099763010041",sug:"£85",img:"",flag:"通过",warn:0},
+{id:"L10",line:"L2",ln:"线2 · 闲鱼直挖",brand:"Toteme",style:"White Openwork Knit Dress",cat:"连衣裙",size:"S",cond:"全新带吊牌",src:"",srcUrl:"",xy:"¥162",xyKind:"闲鱼直挖",xyUrl:"https://www.goofish.com/item?id=1049906175274",sug:"£75",img:"",flag:"⚠️ 卖家 1 年 451 售，经销商特征",warn:1}
+]}];
+let filter="all",query="";
+function esc(s){return (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;")}
+function card(it){
+ const img=it.img?`<img loading="lazy" src="${it.img}" alt="${esc(it.brand)}">`:`<div class="noimg"><div>主图待补</div><div style="font-size:12px">点下方闲鱼链接看图</div></div>`;
+ const src=it.src?`<div>${it.line==="L3"?"Vinted":"海外"}：<b>${esc(it.src)}</b></div>`:"";
+ const srcLink=it.srcUrl?`<a href="${it.srcUrl}" target="_blank" rel="noopener">${it.line==="L3"?"Vinted 成交页":"海外源页"}</a>`:"";
+ return `<div class="card" data-line="${it.line}" data-text="${esc((it.brand+" "+it.style+" "+it.size+" "+it.id).toLowerCase())}">
+ ${img}<div class="body">
+ <span class="badge">${it.ln} · ${it.id}</span>
+ <div class="brand">${esc(it.brand)}</div>
+ <div class="style">${esc(it.style)}</div>
+ <div class="meta">${esc(it.cat)} · ${esc(it.size)} · ${esc(it.cond)}</div>
+ <div class="prices">${src}<div>闲鱼货源：<b>${esc(it.xy)}</b>（${esc(it.xyKind)}）</div><div>建议 Vinted：<b>${esc(it.sug)}</b></div></div>
+ <div class="flag${it.warn?" warn":""}">${esc(it.flag)}</div>
+ <div class="links">${srcLink}<a href="${it.xyUrl}" target="_blank" rel="noopener">闲鱼货源页</a></div>
+ </div></div>`;
+}
+function render(){
+ const main=document.getElementById("main");main.innerHTML="";
+ let total=0,withImg=0;
+ DATA.forEach(day=>{
+   const items=day.items.filter(it=>(filter==="all"||it.line===filter)&&(!query||it.dataset!==undefined||(it.brand+" "+it.style+" "+it.size+" "+it.id).toLowerCase().includes(query)));
+   if(!items.length)return;
+   const h=document.createElement("h2");h.textContent=day.date+" · "+items.length+" 款";main.appendChild(h);
+   const g=document.createElement("div");g.className="grid";g.innerHTML=items.map(card).join("");main.appendChild(g);
+ });
+ DATA.forEach(d=>d.items.forEach(it=>{total++;if(it.img)withImg++}));
+ document.getElementById("tiles").innerHTML=
+ `<div class="tile"><b>${total}</b><span>已选款（目标 40/天）</span></div>
+  <div class="tile"><b>${withImg}</b><span>已带主图</span></div>
+  <div class="tile"><b>${total-withImg}</b><span>主图待补（线2）</span></div>`;
+}
+document.getElementById("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{document.querySelectorAll(".chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");filter=c.dataset.f;render()}));
+render();
+</script>
+</body>
+</html>
